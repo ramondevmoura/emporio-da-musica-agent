@@ -4,6 +4,8 @@ A text (and voice) customer service agent for **Empório da Música**, a fiction
 
 Built for the Artefact *AI Engineer — Full-Stack for GenAI applications* technical case.
 
+**🔗 Live demo: https://emporio.mouraoncode.com** — no install or API key needed (capped at 200 messages/day across visitors).
+
 - **Stack:** Python · OpenAI Responses API (function calling, no agent framework) · Streamlit · SQLite
 - **Quality:** 35 unit tests, plus an 18-scenario behavioral eval suite run against the real model
 - **Deliverables:** [example conversations](conversations/) recorded from real runs, and this README
@@ -34,6 +36,20 @@ Other commands:
 | `ruff check . && ruff format --check .` | Lint |
 
 Configuration (`.env`): `OPENAI_MODEL` (default `gpt-5.4-mini`), `OPENAI_REASONING_EFFORT` (default `low`), `OPENAI_TRANSCRIBE_MODEL` (default `gpt-4o-transcribe`), `MAX_MESSAGES_PER_SESSION` (default 40). Add `?debug=1` to the UI URL to see the tool calls of the last turn.
+
+### Docker / deploy
+
+```bash
+docker build -t emporio-agent:latest .
+docker run --env-file .env -p 8501:8501 emporio-agent:latest
+```
+
+The live demo runs on my homelab server (`deploy/compose.yml`), behind a Cloudflare Tunnel. Because the host is an LXC container where BuildKit can't apply AppArmor, the image is built locally and shipped over SSH:
+
+```bash
+docker save emporio-agent:latest | gzip | ssh <host> 'gunzip | docker load'
+ssh <host> 'cd /opt/emporio-agent && docker compose up -d'
+```
 
 ---
 
