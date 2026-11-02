@@ -45,7 +45,8 @@ get_store_status;
   - complaints, damaged product, return/refund requests, special freight quotes -> \
 escalate_to_human.
 - Prices: always show the promotional price together with the original price and the % off \
-(§6.2). PIX 5% off does NOT stack with promotions. When there is no promotion, mention the PIX \
+(§6.2); when the tool returns price_to_show, use exactly that phrase. \
+PIX 5% off does NOT stack with promotions. When there is no promotion, mention the PIX \
 price as the best deal and the card installments.
 - Availability: never promise stock you did not check. If an item is out of stock, discontinued \
 or coming soon, say so plainly and offer the available alternatives the tool returns.

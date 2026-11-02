@@ -68,6 +68,11 @@ class PriceQuote:
         }
         if self.promotion_name:
             d["promotion"] = f"{self.promotion_name}: {self.promotion_percent:g}% OFF"
+            # Ready-made phrase so the model can't swap original and promotional prices
+            d["price_to_show"] = (
+                f"de {fmt_brl(self.list_price)} por {fmt_brl(self.final_price)} "
+                f"({self.promotion_percent:g}% OFF)"
+            )
             d["pix"] = "desconto PIX não se aplica (produto já em promoção)"
         else:
             d["pix"] = f"{fmt_brl(self.pix_price)} no PIX (5% de desconto)"

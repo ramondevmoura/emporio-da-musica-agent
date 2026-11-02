@@ -55,6 +55,7 @@ SCENARIOS = [
         "turns": ["Quanto está o ukulele Ohana CK-20?"],
         "expect_tools": ["search_products"],
         "include_any": [["439 20"], ["549"], ["20 ?%", "20%"]],
+        "exclude": ["439 20 de r 549"],  # promotional and original price swapped
     },
     {
         "id": "out_of_stock_offers_alternative",

@@ -49,6 +49,7 @@ def test_pix_does_not_stack_with_promotion():
     assert "não se aplica" in d["pix"]
     assert d["promotion"] == "Black Friday: 10% OFF"
     assert d["list_price"] == "R$ 1.000,00"  # original price is always shown (§6.2)
+    assert d["price_to_show"] == "de R$ 1.000,00 por R$ 900,00 (10% OFF)"
 
 
 def test_cart_local_shipping_and_mixed_payment():
