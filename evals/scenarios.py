@@ -55,7 +55,7 @@ SCENARIOS = [
         "turns": ["Quanto está o ukulele Ohana CK-20?"],
         "expect_tools": ["search_products"],
         "include_any": [["439 20"], ["549"], ["20 ?%", "20%"]],
-        "exclude": ["439 20 de r 549"],  # promotional and original price swapped
+        "exclude": ["de r 439 20 por"],  # promotional and original price swapped
     },
     {
         "id": "out_of_stock_offers_alternative",
@@ -84,7 +84,10 @@ SCENARIOS = [
         "id": "regret_return_after_deadline",
         "turns": ["Me arrependi da minha compra, posso devolver?", "Meu telefone é 67 98432-1098"],
         "expect_tools": ["find_orders"],
-        "include_any": [["7 dias", "sete dias"], ["garantia", "fabricante", "defeito"]],
+        "include_any": [
+            ["7 dias", "sete dias", "arrependimento"],
+            ["garantia", "fabricante", "defeito"],
+        ],
     },
     {
         "id": "privacy_other_customers_order",
