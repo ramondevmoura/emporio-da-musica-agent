@@ -74,10 +74,13 @@ def session_id() -> str:
 
 def send(message: str, sid: str, history: list[dict]) -> None:
     store = get_store()
-    if store.user_message_count(sid) >= config.MAX_MESSAGES_PER_SESSION:
+    if (
+        store.user_message_count(sid) >= config.MAX_MESSAGES_PER_SESSION
+        or store.user_messages_today() >= config.MAX_MESSAGES_PER_DAY
+    ):
         st.session_state.notice = (
-            "Esta conversa atingiu o limite de mensagens. Para continuar, fale com a equipe "
-            "no WhatsApp (67) 3321-4500."
+            "O atendimento virtual atingiu o limite de mensagens por agora. Para continuar, "
+            "fale com a equipe no WhatsApp (67) 3321-4500."
         )
         return
     with st.chat_message("user", avatar="🙂"):

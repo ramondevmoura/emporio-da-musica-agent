@@ -73,3 +73,10 @@ def test_conversation_store_roundtrip(tmp_path):
     assert len(store.load("s1")) == 2
     assert store.load("other") == []
     assert store.user_message_count("s1") == 1
+
+
+def test_daily_message_count(tmp_path):
+    store = ConversationStore(tmp_path / "c.db")
+    store.append("a", [{"role": "user", "content": "oi"}])
+    store.append("b", [{"role": "user", "content": "oi"}, {"type": "function_call_output"}])
+    assert store.user_messages_today() == 2

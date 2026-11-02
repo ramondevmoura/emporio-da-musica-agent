@@ -7,10 +7,13 @@ where they left it, and the agent keeps the context ("e aquele violão de ontem?
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from pathlib import Path
 
-DEFAULT_DB = Path(__file__).resolve().parent.parent / "conversations.db"
+DEFAULT_DB = Path(
+    os.getenv("CONVERSATIONS_DB", Path(__file__).resolve().parent.parent / "conversations.db")
+)
 
 
 class ConversationStore:
@@ -46,3 +49,12 @@ class ConversationStore:
 
     def user_message_count(self, session_id: str) -> int:
         return sum(1 for i in self.load(session_id) if i.get("role") == "user")
+
+    def user_messages_today(self) -> int:
+        """Messages sent by all visitors today (UTC): a global cap protects the API budget."""
+        with self._connect() as conn:
+            (count,) = conn.execute(
+                "SELECT COUNT(*) FROM items WHERE date(created_at) = date('now') "
+                "AND json_extract(item, '$.role') = 'user'"
+            ).fetchone()
+        return count
