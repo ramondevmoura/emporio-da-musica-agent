@@ -1,0 +1,15 @@
+# Single-host deploy (homelab box behind a Cloudflare Tunnel -> 127.0.0.1:8200).
+# Secrets and caps live in .env.prod next to this file (not committed):
+#   OPENAI_API_KEY=...  MAX_MESSAGES_PER_DAY=200  MAX_MESSAGES_PER_SESSION=40
+services:
+  app:
+    image: emporio-agent:latest
+    container_name: emporio-agent
+    restart: unless-stopped
+    # LXC host: Docker can't apply AppArmor profiles there
+    security_opt: [apparmor=unconfined]
+    env_file: .env.prod
+    volumes:
+      - ./state:/data  # conversation history (SQLite)
+    ports:
+      - "127.0.0.1:8200:8501"  # only the tunnel reaches it
