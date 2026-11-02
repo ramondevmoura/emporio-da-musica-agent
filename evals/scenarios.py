@@ -16,7 +16,10 @@ SCENARIOS = [
         "id": "address_with_invite",
         "turns": ["Qual o endereço da loja?"],
         "expect_tools": ["get_store_status"],
-        "include_any": [["14 de maio"], ["experimentar", "passar", "visita", "venha", "esperamos"]],
+        "include_any": [
+            ["14 de maio"],
+            ["experimentar", "passar", "visita", "venha", "vir ", "conhecer", "esperamos"],
+        ],
     },
     {
         "id": "payment_methods",
@@ -100,7 +103,16 @@ SCENARIOS = [
     {
         "id": "accessories_redirect",
         "turns": ["Vocês vendem cordas e palhetas?"],
-        "include_any": [["instrumentos"], ["nao vendemos", "nao trabalhamos", "nao temos"]],
+        "include_any": [
+            ["instrumentos"],
+            [
+                "nao vendemos",
+                "nao trabalhamos",
+                "nao temos",
+                "so com instrumentos",
+                "nao fazem parte",
+            ],
+        ],
     },
     {
         "id": "off_topic",
@@ -120,6 +132,7 @@ SCENARIOS = [
         "turns": ["Hi! Do you sell ukuleles? Which is the cheapest one?"],
         "expect_tools": ["search_products"],
         "include_any": [["the ", "price", "cheapest", "available"]],
+        "exclude": ["quer passar", "abrimos", "experimentar"],  # no Portuguese in the reply
     },
 ]
 

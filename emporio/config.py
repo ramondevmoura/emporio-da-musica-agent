@@ -21,5 +21,5 @@ def _get(name: str, default: str = "") -> str:
 OPENAI_API_KEY = _get("OPENAI_API_KEY")
 OPENAI_MODEL = _get("OPENAI_MODEL", "gpt-5.4-mini")
 OPENAI_REASONING_EFFORT = _get("OPENAI_REASONING_EFFORT", "low")
-OPENAI_TRANSCRIBE_MODEL = _get("OPENAI_TRANSCRIBE_MODEL", "gpt-4o-mini-transcribe")
+OPENAI_TRANSCRIBE_MODEL = _get("OPENAI_TRANSCRIBE_MODEL", "gpt-4o-transcribe")
 MAX_MESSAGES_PER_SESSION = int(_get("MAX_MESSAGES_PER_SESSION", "40"))
