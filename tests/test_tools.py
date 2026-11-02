@@ -101,3 +101,9 @@ def test_schemas_are_strict(data):
         params = schema["parameters"]
         assert params["additionalProperties"] is False
         assert set(params.get("required", [])) == set(params["properties"])
+
+
+def test_search_reports_unavailable_exact_match(data):
+    r = search_products(data, query="Giannini GF-3D", only_available=True)
+    assert "Giannini GF-3D Dreadnought Sunburst" not in names(r)
+    assert any("esgotado" in m for m in r["matching_but_unavailable"])

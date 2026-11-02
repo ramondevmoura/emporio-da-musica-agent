@@ -123,7 +123,15 @@ def search_products(
         products = [p for p in products if _final_price(data, p) <= max_price]
     if min_price is not None:
         products = [p for p in products if _final_price(data, p) >= min_price]
+    unavailable_matches: list[str] = []
     if only_available:
+        if query:
+            # A customer asking for a specific model must hear "esgotado", not "não temos"
+            unavailable_matches = [
+                f"{p.name}: {AVAILABILITY_PT[p.availability]}"
+                for p in products
+                if p.availability != "in_stock" and _match_score(data, p, query)[1]
+            ]
         products = [p for p in products if p.availability == "in_stock"]
 
     note = None
@@ -154,7 +162,9 @@ def search_products(
     out: dict[str, Any] = {"total_found": len(products), "results": results}
     if note:
         out["note"] = note
-    if not results:
+    if unavailable_matches:
+        out["matching_but_unavailable"] = unavailable_matches
+    if not results and not unavailable_matches:
         out["note"] = (
             "Nenhum produto encontrado com esses critérios. A loja vende apenas instrumentos "
             "musicais (sem acessórios)."
