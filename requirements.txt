@@ -1,0 +1,4 @@
+openai>=3.40
+streamlit>=1.40
+rapidfuzz>=3.9
+python-dotenv>=1.0
