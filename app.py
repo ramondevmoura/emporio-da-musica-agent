@@ -49,6 +49,12 @@ st.markdown(
 )
 
 
+def show(text: str) -> None:
+    """Render chat text. '$' is escaped because Streamlit treats '$...$' as LaTeX math,
+    which turned 'R$ 159,90 ... R$ 429,90' into a green formula and hid the prices."""
+    st.markdown(text.replace("$", r"\$"))
+
+
 @st.cache_resource
 def get_agent() -> Agent:
     return Agent()
@@ -75,11 +81,11 @@ def send(message: str, sid: str, history: list[dict]) -> None:
         )
         return
     with st.chat_message("user", avatar="🙂"):
-        st.markdown(message)
+        show(message)
     with st.chat_message("assistant", avatar="🎸"):
         with st.spinner(f"{ASSISTANT_NAME} está digitando..."):
             result = get_agent().respond(history, message)
-        st.markdown(result.reply)
+        show(result.reply)
     store.append(sid, result.new_items)
     st.session_state.last_tools = [
         {"tool": e.name, "args": e.arguments, "result": e.result} for e in result.tool_events
@@ -121,10 +127,10 @@ sid = session_id()
 history = get_store().load(sid)
 
 with st.chat_message("assistant", avatar="🎸"):
-    st.markdown(WELCOME)
+    show(WELCOME)
 for role, text in visible_messages(history):
     with st.chat_message(role, avatar="🙂" if role == "user" else "🎸"):
-        st.markdown(text)
+        show(text)
 
 pending = None
 if not history:
