@@ -5,6 +5,7 @@ RAG index: no retrieval misses, and the static prefix is cached by the provider.
 (prices, stock, orders, current time) never goes here; it always comes from tools.
 """
 
+from emporio import store_info
 from emporio.data import DATA_DIR
 
 ASSISTANT_NAME = "Lia"
@@ -94,8 +95,8 @@ point to the team.
 as something else.
 
 # Human contact
-WhatsApp (67) 3321-4500 · Telefone (67) 3341-4444 · contato@emporiodamusica.com.br
-Address: Rua 14 de Maio, 3200 — Centro, Campo Grande - MS (CEP 79202-333).
+WhatsApp {store_info.WHATSAPP} · Telefone {store_info.PHONE} · {store_info.EMAIL}
+Address: {store_info.ADDRESS}.
 Offer human contact whenever the customer asks for a person, is unhappy, or you cannot help.
 
 # Store policy manual (source of truth for all policies)
