@@ -7,7 +7,7 @@ Built for the Artefact *AI Engineer — Full-Stack for GenAI applications* techn
 **🔗 Live demo: https://emporio.mouraoncode.com** — no install or API key needed (capped at 200 messages/day across visitors).
 
 - **Stack:** Python · OpenAI Responses API (function calling, no agent framework) · Streamlit · SQLite
-- **Quality:** 35 unit tests, plus an 18-scenario behavioral eval suite run against the real model
+- **Quality:** 40 unit tests, plus an 18-scenario behavioral eval suite run against the real model
 - **Deliverables:** [example conversations](conversations/) recorded from real runs, and this README
 
 ---
@@ -138,6 +138,16 @@ It never invents urgency, never insists after a "no", and never sells during a c
 ### 8. Interface: Streamlit
 The role is full-stack, so I wanted a real UI and not only a notebook. Streamlit gave me a chat with audio input and good accessibility in about 150 lines of Python, and it deploys for free on Streamlit Community Cloud. A `MAX_MESSAGES_PER_SESSION` limit protects the API key on a public demo. The CLI (`--debug`) is the development tool.
 
+### 9. Resilience: the customer is never left without an answer
+If the LLM is unavailable (outage, timeout, rate limit, invalid key, or an empty answer), the agent still replies, with a **deterministic message built without any API call** (`emporio/fallback.py`). It thanks the customer for the contact and gives the store's WhatsApp, phone, e-mail, address and opening hours. It also says **whether the store is open right now**, computed locally, holidays included: "🔴 Agora a loja está fechada (Finados). Voltamos amanhã às 09:00". A customer who arrives during an outage can still reach the store, so the sale isn't lost.
+
+- **Timeouts.** Each API call has a 25 s timeout and one SDK retry, so nobody waits indefinitely.
+- **Circuit breaker.** After a failure, the agent skips the API for 60 s and answers with the fallback instantly, instead of making every customer wait out the same timeout.
+- **Valid history.** Only the user message and the fallback are stored, never half-finished tool calls, so the conversation continues normally when the API is back.
+- **One source for contact details.** The prompt, the UI and the fallback all read them from `emporio/store_info.py`.
+
+To see it locally, set `OPENAI_API_KEY=invalid` in `.env` and send a message.
+
 ---
 
 ## Data treatment and assumptions
@@ -169,7 +179,7 @@ Issues I found in the data, and how I handled each:
 ## Evaluation
 
 There are two layers:
-1. **Unit tests (`pytest`, 35 tests).** They cover the pricing rules, installment minimums, opening hours with holidays (including Easter-based dates), fuzzy search, stock filters, order privacy (the wrong contact reveals nothing), return windows, strict tool schemas, and the agent loop with a fake OpenAI client.
+1. **Unit tests (`pytest`, 40 tests).** They cover the pricing rules, installment minimums, opening hours with holidays (including Easter-based dates), fuzzy search, stock filters, order privacy (the wrong contact reveals nothing), return windows, strict tool schemas, the agent loop with a fake OpenAI client, and the outage fallback (a simulated `APIConnectionError`, the circuit breaker, and recovery).
 2. **Behavioral evals (`evals/`, 18 scenarios, real model).** Scripted conversations with deterministic checks:
    - which tools must or must not be called;
    - what the reply must or must not contain (accent-insensitive regex);
