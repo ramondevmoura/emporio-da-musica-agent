@@ -12,8 +12,9 @@ import uuid
 
 import streamlit as st
 
-from emporio import config
+from emporio import config, store_info
 from emporio.agent import Agent, visible_messages
+from emporio.fallback import contact_block, status_line
 from emporio.memory import ConversationStore
 from emporio.prompts import ASSISTANT_NAME
 
@@ -30,8 +31,6 @@ SHORTCUTS = [
     ("📦 Meu pedido", "Quero saber como está o meu pedido."),
     ("👤 Falar com atendente", "Quero falar com uma pessoa da equipe."),
 ]
-MAPS_URL = "https://maps.google.com/?q=Rua+14+de+Maio,+3200,+Centro,+Campo+Grande+-+MS"
-WHATSAPP_URL = "https://wa.me/556733214500"
 
 st.markdown(
     """
@@ -49,10 +48,15 @@ st.markdown(
 )
 
 
+def as_markdown(text: str) -> str:
+    """Escape '$' (Streamlit renders '$...$' as LaTeX) and keep single line breaks."""
+    return text.replace("$", r"\$").replace("\n", "  \n")
+
+
 def show(text: str) -> None:
     """Render chat text. '$' is escaped because Streamlit treats '$...$' as LaTeX math,
     which turned 'R$ 159,90 ... R$ 429,90' into a green formula and hid the prices."""
-    st.markdown(text.replace("$", r"\$"))
+    st.markdown(as_markdown(text))
 
 
 @st.cache_resource
@@ -79,8 +83,8 @@ def send(message: str, sid: str, history: list[dict]) -> None:
         or store.user_messages_today() >= config.MAX_MESSAGES_PER_DAY
     ):
         st.session_state.notice = (
-            "O atendimento virtual atingiu o limite de mensagens por agora. Para continuar, "
-            "fale com a equipe no WhatsApp (67) 3321-4500."
+            "O atendimento virtual atingiu o limite de mensagens por agora. Fale com a nossa "
+            f"equipe:\n\n{contact_block()}\n\n{status_line()}"
         )
         return
     with st.chat_message("user", avatar="🙂"):
@@ -115,9 +119,9 @@ def transcribe_audio(audio) -> str | None:
 
 st.markdown("## 🎸 Empório da Música")
 st.markdown(
-    f'<div class="contact">📍 <a href="{MAPS_URL}" target="_blank">Ver no mapa</a>'
-    f'💬 <a href="{WHATSAPP_URL}" target="_blank">WhatsApp</a>'
-    '📞 <a href="tel:+556733414444">Ligar</a></div>',
+    f'<div class="contact">📍 <a href="{store_info.MAPS_URL}" target="_blank">Ver no mapa</a>'
+    f'💬 <a href="{store_info.WHATSAPP_URL}" target="_blank">WhatsApp</a>'
+    f'📞 <a href="{store_info.PHONE_URL}">Ligar</a></div>',
     unsafe_allow_html=True,
 )
 st.divider()
@@ -155,7 +159,7 @@ if pending:
         st.rerun()  # hide the shortcut buttons after the first message
 
 if notice := st.session_state.pop("notice", None):
-    st.info(notice)
+    st.info(as_markdown(notice))
 
 if history and st.button("🔄 Começar nova conversa"):
     st.query_params["s"] = uuid.uuid4().hex[:12]
