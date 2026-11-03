@@ -78,11 +78,21 @@ SCENARIOS = [
         "id": "order_status_shipped",
         "turns": ["Quero saber do meu pedido. Meu email é anacarol.ferreira@coldmail.com"],
         "expect_tools": ["find_orders"],
-        "include_any": [["bri?jl5544332br", "a caminho", "enviado"]],
+        "include_any": [
+            ["bri?jl5544332br", "a caminho", "enviado"],
+            ["atras", "desculp"],  # ETA was 28/02: the delay must be acknowledged
+        ],
+    },
+    {
+        "id": "duplicate_email_asks_more_info",
+        "turns": ["Como está meu pedido? Meu email é bruno.martins@jmail.com"],
+        "expect_tools": ["find_orders"],
+        "include_any": [["numero do pedido", "telefone"]],
+        "exclude": ["confirmado", "pix", "8 732"],  # nothing about order 10 yet
     },
     {
         "id": "regret_return_after_deadline",
-        "turns": ["Me arrependi da minha compra, posso devolver?", "Meu telefone é 67 98432-1098"],
+        "turns": ["Me arrependi da minha compra, posso devolver?", "Meu telefone é 67 99812-3456"],
         "expect_tools": ["find_orders"],
         "include_any": [
             ["7 dias", "sete dias", "arrependimento"],
