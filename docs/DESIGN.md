@@ -124,14 +124,17 @@ Issues I found in the data, and how I handled each:
 | Some Black Friday and seasonal promotions are inactive | Only `is_active = 1` applies. The agent says an expired promotion isn't active and shows the current price (§7.3) |
 | Shipping to other cities depends on the CEP, weight and size, which aren't available | The agent explains the options (PAC, SEDEX, Jadlog) and that the team gives a quote; it can open a ticket |
 | The case says nothing about the conversation language, and the store is Brazilian | The agent replies in pt-BR by default and mirrors the customer's language. One eval scenario covers English |
+| Two customer records share `bruno.martins@jmail.com` ("Bruno Carvalho Martins" and "Bruno Martins", same city, different phones). It looks like a duplicate registration, but it can't be proven | A lookup that matches more than one record reveals nothing and asks for the phone or the order number. Taking the first match could show one person's orders to another |
+| Relative to today, orders are stuck: #8 was shipped with an ETA of 28/02/2026, and #9–#16 have been pending or confirmed since Feb/Mar 2026 | `find_orders` adds an `attention` note (late delivery, payment pending for more than 5 days, paid but not shipped for more than 7 days). The agent apologizes and offers a ticket instead of reading out an old ETA |
+| Kala KA-ABP-CTG is `coming_soon` but appears in orders #3 (delivered) and #14. Ibanez Bass 2X is `discontinued` but has 13 units in stock | Statuses are taken as the source of truth for selling: coming-soon and discontinued items are not offered. Flagged as a data issue; selling the bass as "last units" would be a business decision |
 
 ---
 
 ## Evaluation
 
 There are two layers:
-1. **Unit tests (`pytest`, 40 tests).** They cover the pricing rules, installment minimums, opening hours with holidays (including Easter-based dates), fuzzy search, stock filters, order privacy (the wrong contact reveals nothing), return windows, strict tool schemas, the agent loop with a fake OpenAI client, and the outage fallback (a simulated `APIConnectionError`, the circuit breaker, and recovery).
-2. **Behavioral evals (`evals/`, 18 scenarios, real model).** Scripted conversations with deterministic checks:
+1. **Unit tests (`pytest`, 42 tests).** They cover the pricing rules, installment minimums, opening hours with holidays (including Easter-based dates), fuzzy search, stock filters, order privacy (the wrong contact or an ambiguous duplicate record reveals nothing), stuck-order alerts, return windows, strict tool schemas, the agent loop with a fake OpenAI client, and the outage fallback (a simulated `APIConnectionError`, the circuit breaker, and recovery).
+2. **Behavioral evals (`evals/`, 19 scenarios, real model).** Scripted conversations with deterministic checks:
    - which tools must or must not be called;
    - what the reply must or must not contain (accent-insensitive regex);
    - a maximum length.
@@ -146,7 +149,7 @@ The evals were the main development tool. Most of the prompt and tool changes in
 
 ## Known limitations and what I'd do with more time
 
-- **LLM variability.** The same scenario sometimes passes and sometimes fails (for example, it occasionally states the hours without an explicit invitation). The evals measure this, but 18 scenarios is a small set. With more time I would:
+- **LLM variability.** The same scenario sometimes passes and sometimes fails (for example, it occasionally states the hours without an explicit invitation). The evals measure this, but 19 scenarios is a small set. With more time I would:
   - grow the set with real anonymized conversations;
   - run each scenario several times and track the pass rate;
   - add an LLM judge for tone and conciseness, which regex checks can't measure.

@@ -4,7 +4,7 @@
 
 **🔗 Live demo: https://emporio.mouraoncode.com**. No install or API key needed.
 
-`Python` · `OpenAI Responses API (function calling)` · `Streamlit` · `SQLite` · 40 unit tests · 18 evals on the real model (96% pass)
+`Python` · `OpenAI Responses API (function calling)` · `Streamlit` · `SQLite` · 42 unit tests · 19 evals on the real model
 
 ---
 
@@ -61,7 +61,7 @@ Full rationale: **[docs/DESIGN.md](docs/DESIGN.md)**.
 
 ## Results
 
-- **Evals:** 18 scripted scenarios (catalog, promotions, returns, privacy, complaints, off-topic questions, prompt injection, an English-speaking customer). Over 3 full runs, **52 of 54 passed (96%)**, and both failures were false positives of my checks.
+- **Evals:** 19 scripted scenarios (catalog, promotions, returns, privacy, duplicate customer records, late orders, complaints, off-topic questions, prompt injection, an English-speaking customer). Over 3 full runs of the first 18 scenarios, **52 of 54 passed (96%)**, and both failures were false positives of my checks. I rerun the suite after every change.
 - **Evals as the main dev tool:** they caught real bugs that I then fixed. The agent answered "yes, you can return it" before checking the order, swapped the original and promotional prices, and mixed Portuguese into English replies.
 - **[5 example conversations](conversations/)**, recorded from real runs with the tool calls shown. The non-trivial one is a [return request](conversations/03-return-request-policy.md): identity check, order lookup, return deadlines, warranty, and a ticket with a protocol number.
 
@@ -76,6 +76,9 @@ The data has a few inconsistencies. These are the main ones and how I handled th
 - **Orders 3 and 20 have totals that don't match their items.** The agent shows the recorded total.
 - **The policy says "300+ instruments", but there are 65, and no wind or orchestral instruments.** The agent says so; it doesn't invent products.
 - **Language.** The agent uses pt-BR by default and switches to the customer's language.
+- **Two customer records share one e-mail** (`bruno.martins@jmail.com`). The agent reveals nothing until the customer gives the phone or the order number (LGPD).
+- **Orders stuck for months** (shipped with an ETA in February, pending payments since March). The tool flags them, so the agent apologizes and offers a ticket instead of repeating an old date.
+- **Contradictory product statuses.** A "coming soon" ukulele appears in delivered orders, and a "discontinued" bass still has stock. Discontinued items are not offered (they could arguably be sold as "last units").
 
 ---
 
