@@ -133,8 +133,8 @@ Issues I found in the data, and how I handled each:
 ## Evaluation
 
 There are two layers:
-1. **Unit tests (`pytest`, 42 tests).** They cover the pricing rules, installment minimums, opening hours with holidays (including Easter-based dates), fuzzy search, stock filters, order privacy (the wrong contact or an ambiguous duplicate record reveals nothing), stuck-order alerts, return windows, strict tool schemas, the agent loop with a fake OpenAI client, and the outage fallback (a simulated `APIConnectionError`, the circuit breaker, and recovery).
-2. **Behavioral evals (`evals/`, 19 scenarios, real model).** Scripted conversations with deterministic checks:
+1. **Unit tests (`pytest`, 43 tests).** They cover the pricing rules, installment minimums, opening hours with holidays (including Easter-based dates), fuzzy search, stock filters, order privacy (the wrong contact or an ambiguous duplicate record reveals nothing), stuck-order alerts, return windows, strict tool schemas, the agent loop with a fake OpenAI client, and the outage fallback (a simulated `APIConnectionError`, the circuit breaker, and recovery).
+2. **Behavioral evals (`evals/`, 20 scenarios, real model).** Scripted conversations with deterministic checks:
    - which tools must or must not be called;
    - what the reply must or must not contain (accent-insensitive regex);
    - a maximum length.
@@ -149,7 +149,7 @@ The evals were the main development tool. Most of the prompt and tool changes in
 
 ## Known limitations and what I'd do with more time
 
-- **LLM variability.** The same scenario sometimes passes and sometimes fails (for example, it occasionally states the hours without an explicit invitation). The evals measure this, but 19 scenarios is a small set. With more time I would:
+- **LLM variability.** The same scenario sometimes passes and sometimes fails (for example, it occasionally states the hours without an explicit invitation). The evals measure this, but 20 scenarios is a small set. With more time I would:
   - grow the set with real anonymized conversations;
   - run each scenario several times and track the pass rate;
   - add an LLM judge for tone and conciseness, which regex checks can't measure.

@@ -4,7 +4,7 @@
 
 **🔗 Live demo: https://emporio.mouraoncode.com**. No install or API key needed.
 
-`Python` · `OpenAI Responses API (function calling)` · `Streamlit` · `SQLite` · 42 unit tests · 19 evals on the real model
+`Python` · `OpenAI Responses API (function calling)` · `Streamlit` · `SQLite` · 43 unit tests · 20 evals on the real model
 
 ---
 
@@ -61,9 +61,9 @@ Full rationale: **[docs/DESIGN.md](docs/DESIGN.md)**.
 
 ## Results
 
-- **Evals:** 19 scripted scenarios (catalog, promotions, returns, privacy, duplicate customer records, late orders, complaints, off-topic questions, prompt injection, an English-speaking customer). Over 3 full runs of the first 18 scenarios, **52 of 54 passed (96%)**, and both failures were false positives of my checks. I rerun the suite after every change.
+- **Evals:** 20 scripted scenarios (catalog, promotions, returns, privacy, duplicate customer records, late orders, complaints, off-topic questions, prompt injection, an English-speaking customer). Over 3 full runs of the first 18 scenarios, **52 of 54 passed (96%)**, and both failures were false positives of my checks. I rerun the suite after every change.
 - **Evals as the main dev tool:** they caught real bugs that I then fixed. The agent answered "yes, you can return it" before checking the order, swapped the original and promotional prices, and mixed Portuguese into English replies.
-- **[5 example conversations](conversations/)**, recorded from real runs with the tool calls shown. The non-trivial one is a [return request](conversations/03-return-request-policy.md): identity check, order lookup, return deadlines, warranty, and a ticket with a protocol number.
+- **[5 example conversations](conversations/)**, recorded from real runs with the tool calls shown. Two are non-trivial: a [return request](conversations/03-return-request-policy.md) (identity check, order lookup, return deadlines, warranty, ticket) and an [order lookup with a duplicate customer record and a stuck order](conversations/04-order-status-duplicate-record-and-delay.md).
 
 ---
 
