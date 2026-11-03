@@ -17,7 +17,7 @@ Built for the Artefact *AI Engineer — Full-Stack for GenAI applications* techn
 Requirements: Python 3.11+ and an OpenAI API key.
 
 ```bash
-git clone <this repo> && cd <repo>
+git clone https://github.com/ramondevmoura/emporio-da-musica-agent && cd emporio-da-musica-agent
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements-dev.txt
 cp .env.example .env                                    # then put your OPENAI_API_KEY in .env
