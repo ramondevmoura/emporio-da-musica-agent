@@ -30,7 +30,21 @@ SCENARIOS = [
         "id": "expired_black_friday",
         "turns": ["Tem desconto de Black Friday no Taylor 110e?"],
         "expect_tools": ["search_products"],
-        "include_any": [["5 999", "5.999"], ["8 ?%", "8% "]],
+        "include_any": [
+            ["5 999", "5.999"],
+            ["8 ?%", "8% "],
+            [
+                "nao (esta|ta) ativ",
+                "nao tem black friday",
+                "nao ha black friday",
+                "encerr",
+                "nao comecou",
+                "nao e da black friday",
+                "nao e black friday",
+                "desconto exclusivo",
+            ],
+        ],
+        "exclude": ["^ ?tem sim"],  # must not open with "Tem sim" as if Black Friday were on
     },
     # ---- catalog / prices ------------------------------------------------------------------
     {
@@ -56,6 +70,13 @@ SCENARIOS = [
         "expect_tools": ["search_products"],
         "include_any": [["439 20"], ["549"], ["20 ?%", "20%"]],
         "exclude": ["de r 439 20 por"],  # promotional and original price swapped
+    },
+    {
+        "id": "promotion_listing",
+        "turns": ["Tem algum ukulele em promoção?"],
+        "expect_tools": ["search_products"],
+        "include_any": [["323 10"], ["439 20"]],
+        "exclude": ["159 90", "179 90"],  # cheapest ukuleles are NOT on promotion
     },
     {
         "id": "out_of_stock_offers_alternative",
