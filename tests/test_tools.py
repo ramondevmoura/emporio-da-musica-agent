@@ -107,3 +107,28 @@ def test_search_reports_unavailable_exact_match(data):
     r = search_products(data, query="Giannini GF-3D", only_available=True)
     assert "Giannini GF-3D Dreadnought Sunburst" not in names(r)
     assert any("esgotado" in m for m in r["matching_but_unavailable"])
+
+
+def test_duplicate_email_reveals_nothing_until_disambiguated(data):
+    # Two customer records share bruno.martins@jmail.com (data quirk)
+    r = find_orders(data, "bruno.martins@jmail.com")
+    assert r["found"] is False and r["needs_more_info"] is True
+    assert "Bruno" not in str(r)
+    # The order number or the phone narrows it down to one record
+    by_order = find_orders(data, "bruno.martins@jmail.com", order_id=10)
+    assert by_order["found"] and by_order["orders"][0]["order_id"] == 10
+    assert find_orders(data, "(67) 98543-2109")["found"] is True
+
+
+def test_stuck_orders_are_flagged(data):
+    today = date(2026, 11, 2)
+    ana = data.customers[2].email  # order 8: shipped, ETA 28/02/2026
+    shipped = find_orders(data, ana, order_id=8, today=today)["orders"][0]
+    assert shipped["attention"].startswith("ATRASADO")
+
+    owner13 = data.customers[data.orders[13].customer_id].email  # pending since March
+    assert "Pagamento pendente" in find_orders(data, owner13, 13, today)["orders"][0]["attention"]
+
+    # Before the ETA nothing is flagged
+    on_time = find_orders(data, ana, order_id=8, today=date(2026, 2, 20))["orders"][0]
+    assert "attention" not in on_time

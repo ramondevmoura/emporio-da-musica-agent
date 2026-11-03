@@ -29,6 +29,8 @@ REGRET_DAYS = 7
 DEFECT_EXCHANGE_DAYS = 30
 LEGAL_WARRANTY_DAYS = 90
 HANDOFF_LOG = DATA_DIR / "handoffs.jsonl"
+PENDING_PAYMENT_DAYS = 5  # boleto clears in up to 3 business days (§3)
+CONFIRMED_NOT_SHIPPED_DAYS = 7
 
 AVAILABILITY_PT = {
     "in_stock": "disponível",
@@ -217,17 +219,39 @@ def quote_purchase(
     return quote
 
 
-def _find_customer(data: StoreData, contact: str):
+def _find_customers(data: StoreData, contact: str) -> list:
+    """All customers matching a phone or e-mail. The data has duplicates (two records share
+    an e-mail), so callers must handle more than one match instead of taking the first."""
     contact = contact.strip().lower()
     if "@" in contact:
-        return next((c for c in data.customers.values() if c.email == contact), None)
+        return [c for c in data.customers.values() if c.email == contact]
     digits = digits_only(contact)
     if len(digits) < 8:
-        return None
+        return []
     # Compare the last 8 digits so "(67) 99812-3456", "67998123456" and "99812-3456" all match
-    return next(
-        (c for c in data.customers.values() if digits_only(c.phone)[-8:] == digits[-8:]), None
-    )
+    return [c for c in data.customers.values() if digits_only(c.phone)[-8:] == digits[-8:]]
+
+
+def _order_alert(order, today: date) -> str | None:
+    """Flag orders that are stuck, so the agent apologizes instead of reading an old ETA."""
+    age = (today - order.order_date).days
+    if order.status == "shipped" and order.estimated_delivery and order.estimated_delivery < today:
+        late = (today - order.estimated_delivery).days
+        return (
+            f"ATRASADO: a previsão de entrega era {order.estimated_delivery:%d/%m/%Y} "
+            f"({late} dias atrás). Peça desculpas e ofereça abrir um atendimento."
+        )
+    if order.status == "pending" and age > PENDING_PAYMENT_DAYS:
+        return (
+            f"Pagamento pendente há {age} dias (boleto compensa em até 3 dias úteis; PIX e "
+            "cartão são imediatos). Algo deu errado: ofereça a ajuda da equipe."
+        )
+    if order.status == "confirmed" and age > CONFIRMED_NOT_SHIPPED_DAYS:
+        return (
+            f"Pago há {age} dias e ainda não enviado, fora do normal. Peça desculpas e "
+            "ofereça abrir um atendimento."
+        )
+    return None
 
 
 def _return_windows(order, today: date) -> dict:
@@ -252,17 +276,33 @@ def find_orders(
     data: StoreData, contact: str, order_id: int | None = None, today: date | None = None
 ) -> dict:
     today = today or now_local().date()
-    customer = _find_customer(data, contact)
     not_found = {
         "found": False,
         "message": "Não encontrei pedidos com esses dados. Peça para o cliente conferir o "
         "telefone ou e-mail usado na compra.",
     }
-    if not customer:
+    customers = _find_customers(data, contact)
+    if order_id is not None:
+        # never reveal other customers' orders
+        customers = [
+            c
+            for c in customers
+            if data.orders.get(order_id, None) and data.orders[order_id].customer_id == c.id
+        ]
+    if not customers:
         return not_found
+    if len(customers) > 1:
+        # Ambiguous contact (duplicate records): reveal nothing until it is narrowed down
+        return {
+            "found": False,
+            "needs_more_info": True,
+            "message": "Esse contato está ligado a mais de um cadastro. Para proteger os dados, "
+            "peça o número do pedido ou o telefone usado na compra.",
+        }
+    customer = customers[0]
     orders = [o for o in data.orders.values() if o.customer_id == customer.id]
     if order_id is not None:
-        orders = [o for o in orders if o.id == order_id]  # never reveal other customers' orders
+        orders = [o for o in orders if o.id == order_id]
     if not orders:
         return not_found
     orders.sort(key=lambda o: o.order_date, reverse=True)
@@ -288,6 +328,8 @@ def find_orders(
             entry[label] = o.estimated_delivery.strftime("%d/%m/%Y")
         if o.notes:
             entry["notes"] = o.notes
+        if alert := _order_alert(o, today):
+            entry["attention"] = alert
         entry["return_and_warranty"] = _return_windows(o, today)
         result.append(entry)
     return {
