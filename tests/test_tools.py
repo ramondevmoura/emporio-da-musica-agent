@@ -132,3 +132,9 @@ def test_stuck_orders_are_flagged(data):
     # Before the ETA nothing is flagged
     on_time = find_orders(data, ana, order_id=8, today=date(2026, 2, 20))["orders"][0]
     assert "attention" not in on_time
+
+
+def test_search_only_promotions(data):
+    r = search_products(data, category="Ukuleles", on_promotion_only=True)
+    assert sorted(names(r)) == ["Kalani KAL-700T Tenor Natural", "Ohana CK-20 Concert Natural"]
+    assert all("price_to_show" in item for item in r["results"])

@@ -116,6 +116,7 @@ def search_products(
     max_price: float | None = None,
     min_price: float | None = None,
     only_available: bool = False,
+    on_promotion_only: bool = False,
 ) -> dict:
     products = list(data.products.values())
     if category:
@@ -126,6 +127,8 @@ def search_products(
     if min_price is not None:
         products = [p for p in products if _final_price(data, p) >= min_price]
     unavailable_matches: list[str] = []
+    if on_promotion_only:
+        products = [p for p in products if data.active_promotion(p.id)]
     if only_available:
         if query:
             # A customer asking for a specific model must hear "esgotado", not "não temos"
@@ -404,8 +407,20 @@ def build_tool_schemas(data: StoreData) -> list[dict]:
                         "type": "boolean",
                         "description": "True to return only items in stock.",
                     },
+                    "on_promotion_only": {
+                        "type": "boolean",
+                        "description": "True to return only items with an active promotion "
+                        "(e.g. 'tem algo em promoção?').",
+                    },
                 },
-                "required": ["query", "category", "max_price", "min_price", "only_available"],
+                "required": [
+                    "query",
+                    "category",
+                    "max_price",
+                    "min_price",
+                    "only_available",
+                    "on_promotion_only",
+                ],
                 "additionalProperties": False,
             },
         },
